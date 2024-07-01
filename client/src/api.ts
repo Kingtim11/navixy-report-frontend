@@ -14,23 +14,24 @@ export const getTrackers = async (hash: string): Promise<GetTrackersResponse> =>
   return response.data;
 };
 
+// src/api.ts
 export const getCheckins = async (
   hash: string,
   trackerIds: number[],
   startDate: string,
   endDate: string,
-  format: string,
   customerId: string,
-  reportType: string
+  reportType: string,
+  reportTitle: string
 ): Promise<AxiosResponse<GetCheckinsResponse>> => {
   return api.post<GetCheckinsResponse>('/api/checkins', {
     hash,
     trackerIds,
     startDate,
     endDate,
-    format,
     customerId,
     reportType,
+    reportTitle,
   }, {
     headers: {
       'Content-Type': 'application/json'
@@ -42,6 +43,9 @@ export const fetchReports = async (customerId: string): Promise<AxiosResponse<Re
   return api.get<Report[]>('/api/reports', { params: { customerId } });
 };
 
-export const downloadReport = async (reportId: number): Promise<AxiosResponse<Blob>> => {
-  return api.get<Blob>(`/api/reports/${reportId}/download`, { responseType: 'blob' });
+export const downloadReport = async (reportId: number, format: 'pdf' | 'xlsx') => {
+  const response = await api.get(`/api/reports/${reportId}/download/${format}`, {
+    responseType: 'arraybuffer',
+  });
+  return response.data;
 };

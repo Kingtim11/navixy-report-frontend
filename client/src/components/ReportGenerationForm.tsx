@@ -1,4 +1,4 @@
-// RepoerGenerationForm.tsx
+// ReportGenerationForm.tsx
 import React, { useState, useEffect } from 'react';
 import { getTrackers, getCheckins } from '../api';
 import { Tracker } from '../types';
@@ -21,9 +21,11 @@ const ReportGenerationForm: React.FC<ReportGenerationFormProps> = ({
   setSelectedTrackers,
 }) => {
   const [trackers, setTrackers] = useState<Tracker[]>([]);
+  const [reportTitle, setReportTitle] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  const [fileFormat, setFileFormat] = useState<string>('pdf');
+  const [startTime, setStartTime] = useState<string>('00:00');
+  const [endTime, setEndTime] = useState<string>('23:59');
   const [fileURL, setFileURL] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,8 +48,8 @@ const ReportGenerationForm: React.FC<ReportGenerationFormProps> = ({
 
   const handleGenerateReport = async () => {
     if (customerId && selectedTrackers.length > 0 && startDate && endDate) {
-      const formattedStartDate = new Date(startDate).toISOString();
-      const formattedEndDate = new Date(endDate).toISOString();
+      const formattedStartDate = `${startDate}T${startTime}:00`;
+      const formattedEndDate = `${endDate}T${endTime}:00`;
 
       try {
         const response = await getCheckins(
@@ -55,9 +57,9 @@ const ReportGenerationForm: React.FC<ReportGenerationFormProps> = ({
           selectedTrackers,
           formattedStartDate,
           formattedEndDate,
-          fileFormat,
           customerId,
-          reportType || ''
+          reportType || '',
+          reportTitle
         );
         const blob = new Blob([response.data as unknown as BlobPart], { type: response.headers['content-type'] });
         const url = window.URL.createObjectURL(blob);
@@ -71,6 +73,11 @@ const ReportGenerationForm: React.FC<ReportGenerationFormProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    // Handle the cancel action here
+    onBack(); // Or any other logic to go back to the previous step
+  };
+
   return (
     <>
       <ReportObjectSelection
@@ -81,15 +88,19 @@ const ReportGenerationForm: React.FC<ReportGenerationFormProps> = ({
       />
       <ReportSettings
         reportType={reportType}
+        reportTitle={reportTitle}
+        setReportTitle={setReportTitle}
         startDate={startDate}
         endDate={endDate}
+        startTime={startTime}
+        endTime={endTime}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
-        fileFormat={fileFormat}
-        setFileFormat={setFileFormat}
+        setStartTime={setStartTime}
+        setEndTime={setEndTime}
         handleGenerateReport={handleGenerateReport}
+        handleCancel={handleCancel}
         fileURL={fileURL}
-        onBack={onBack}
       />
     </>
   );

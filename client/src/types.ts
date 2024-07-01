@@ -91,6 +91,7 @@ export interface GetCheckinsResponse {
 export interface Report {
   id: number;
   report_type: string;
+  report_title: string;
   file_format: string;
   generated_at: string;
 }

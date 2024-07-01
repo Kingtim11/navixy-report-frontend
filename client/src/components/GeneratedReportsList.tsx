@@ -1,11 +1,12 @@
+// GeneratedReportsList.tsx
 import React, { useEffect, useState } from 'react';
-import { fetchReports, downloadReport } from '../api';
+import { fetchReports } from '../api';
 import { Report } from '../types';
 
 interface GeneratedReportsListProps {
   onCreateReport: () => void;
   customerId: string;
-  onOpenReport: (url: string) => void;
+  onOpenReport: (reportId: number, title: string) => void;
 }
 
 const GeneratedReportsList: React.FC<GeneratedReportsListProps> = ({ onCreateReport, customerId, onOpenReport }) => {
@@ -15,11 +16,7 @@ const GeneratedReportsList: React.FC<GeneratedReportsListProps> = ({ onCreateRep
     const fetchReportsData = async () => {
       try {
         const response = await fetchReports(customerId);
-        if (Array.isArray(response.data)) {
-          setReports(response.data);
-        } else {
-          console.error('Unexpected response data format:', response.data);
-        }
+        setReports(response.data);
       } catch (error) {
         console.error('Failed to fetch reports:', error);
         setReports([]);
@@ -29,16 +26,6 @@ const GeneratedReportsList: React.FC<GeneratedReportsListProps> = ({ onCreateRep
     fetchReportsData();
   }, [customerId]);
 
-  const handleOpenReport = async (reportId: number) => {
-    try {
-      const response = await downloadReport(reportId);
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
-      onOpenReport(url);
-    } catch (error) {
-      console.error('Failed to open report:', error);
-    }
-  };
-
   return (
     <div className="report-panel">
       <div className="panel-header">
@@ -47,9 +34,9 @@ const GeneratedReportsList: React.FC<GeneratedReportsListProps> = ({ onCreateRep
       <button className="item-like-button" onClick={onCreateReport}>+ CREATE REPORT</button>
       <ul className="reports-list">
         {reports.map((report) => (
-          <li key={report.id} className="report-item" onClick={() => handleOpenReport(report.id)}>
+          <li key={report.id} className="report-item" onClick={() => onOpenReport(report.id, report.report_title)}>
             <div className="report-content">
-              <h3>{report.report_type}</h3>
+              <h3>{report.report_title}</h3>
               <p>Generated: {new Date(report.generated_at).toLocaleString()}</p>
             </div>
           </li>
