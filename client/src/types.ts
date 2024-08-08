@@ -37,10 +37,12 @@ export interface TagBinding {
   // Define the structure of a tag binding here
 }
 
+// Tracker type
 export interface Tracker {
   id: number;
   label: string;
   group_id: number;
+  hasEngineHours: boolean;
   source: {
     id: number;
     device_id: string;
@@ -54,6 +56,12 @@ export interface Tracker {
   };
   tag_bindings: TagBinding[];
   clone: boolean;
+}
+
+export interface TrackerGroup {
+  id: number;
+  title: string;
+  color: string;
 }
 
 export interface Checkin {
@@ -84,6 +92,11 @@ export interface GetTrackersResponse {
   list: Tracker[];
 }
 
+export interface GetTrackerGroupsResponse {
+  success: boolean;
+  list: TrackerGroup[];
+}
+
 export interface GetCheckinsResponse {
   list: CheckinData[];
 }
@@ -98,4 +111,24 @@ export interface Report {
 
 export interface GetReportsResponse {
   data: Report[];
+}
+
+export interface EngineHoursData {
+  trackerId: number;
+  hours: number;
+}
+
+export interface GetEngineHoursResponse {
+  success: boolean;
+  list: EngineHoursData[];
+}
+
+// StaleGPSData type for the Stale GPS report
+export interface StaleGPSData {
+  fleetNumber: string;
+  deviceImeiNumber: string;
+  latitude: number;
+  longitude: number;
+  lastGpsUpdate: string;
+  mapLink: string;
 }

@@ -21,6 +21,18 @@ const ReportTypeSelection: React.FC<ReportTypeSelectionProps> = ({ onSelectRepor
             <p>Check-ins on the map submitted by mobile employees</p>
           </div>
         </li>
+        <li className="report-item" onClick={() => onSelectReportType('engineHours')}>
+          <div className="report-content">
+            <h3>Engine Hours</h3>
+            <p>Engine hours for selected vehicles over a specified time period</p>
+          </div>
+        </li>
+        <li className="report-item" onClick={() => onSelectReportType('staleGPS')}>
+          <div className="report-content">
+            <h3>Stale GPS</h3>
+            <p>Vehicles that haven't had a GPS update within a specified time frame</p>
+          </div>
+        </li>
       </ul>
     </div>
   );

@@ -55,7 +55,7 @@ body {
   padding: 9px 14px;
   font-size: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  z-index: 100;
+  z-index: 1;
   text-align: left;
   display: flex;
   justify-content: space-between;
@@ -137,7 +137,7 @@ body {
   background-color: #0056b3;
 }
 
-.report-generation-content {
+.report-generation-content-settings {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -162,13 +162,21 @@ body {
 
 .input-group label {
   font-size: 14px;
-  color: #666;
+}
+
+.react-datepicker {
+  z-index: 1000 !important;
+}
+
+.date-picker {
+  z-index: 1000 !important;
 }
 
 .input-group input:not([type="range"]),
 .react-datepicker-wrapper input {
   width: 100%;
   box-sizing: border-box;
+  color: #000; /* Set text color */
 }
 
 .input-group input:not([type="range"]) {
@@ -176,7 +184,7 @@ body {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
-  color: #666;
+  color: #000; /* Set text color */
 }
 
 .react-datepicker-wrapper {
@@ -189,11 +197,37 @@ body {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
+  color: #000; /* Set text color */
+}
+
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+input[type="number"], 
+input[type="search"], 
+input[type="tel"], 
+input[type="url"], 
+textarea {
+  color: #000; /* Set text color */
+}
+
+/* Placeholder text color */
+::placeholder {
+  color: #999; /* Set your desired color here */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #999; /* Set your desired color here */
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: #999; /* Set your desired color here */
 }
 
 .time-range-slider {
   position: relative;
-  height: 40px; /* Adjust height to fit smaller knobs */
+  z-index: 0;
+  height: 20px; /* Adjust height to fit smaller knobs */
   display: flex;
   align-items: center;
   border: none; /* Remove border */
@@ -273,4 +307,169 @@ body {
   .app-container {
     flex-direction: row;
   }
+}
+
+
+
+
+.report-generation-content-objects {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  flex: 1;
+}
+
+.group-section {
+  margin-bottom: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.group-section input {
+  margin-right: 1em;
+}
+
+.group-header {
+  display: flex;
+  background-color: #F4F7F9; /* Light background color */
+  border-left: 0.3em solid; /* Left border for group color */
+  border-radius: 3px;
+  align-items: center;
+  height: 2em;
+}
+
+.group-header h3 {
+  margin: 0;
+  font-size: 13px;
+  flex-grow: 1;
+}
+
+.group-header .toggle-button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.group-header.selected {
+  background-color: #1e96dc;
+  color: #fff;
+}
+
+.group-header.selected input[type="checkbox"] {
+  background-color: #1e96dc;
+}
+
+.object {
+  display: flex;
+  padding-left: 0.3em;
+  font-size: 12px;
+  align-items: center;
+  height: 2em;
+  cursor: pointer;
+}
+
+.object:hover {
+  background-color: #ececec;
+}
+
+.object.selected {
+  background-color: #1e96dc;
+  color: #fff;
+}
+
+.object.selected input[type="checkbox"] {
+  background-color: #1e96dc;
+}
+
+.select-all {
+  display: flex;
+  align-items: center;
+  margin-left: 0.3em;
+  font-size: 12px;
+}
+
+.select-all input {
+  margin-right: 0.5em;
+}
+
+.select-all input,
+.group-section input,
+.object input {
+  width: 1.2em; /* Adjust size of input box if necessary */
+  height: 1.2em; /* Adjust size of input box if necessary */
+  cursor: pointer;
+}
+
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding-right: 0.5em;
+}
+
+
+
+/* Calendar popout/ date picker */
+
+.custom-header {
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.custom-header button,
+.custom-header select {
+  margin: 0 5px;
+}
+
+.datepicker-ok-button-container {
+  display: flex;
+  justify-content: flex-end; /* Aligns children to the right */
+  padding: 10px;
+  border-top: 1px solid #aeaeae;
+}
+
+.datepicker-ok-button {
+  width: auto; /* Adjust width as needed */
+  padding: 5px 10px; /* Add some horizontal padding */
+  background: #1e96dc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.datepicker-ok-button:hover {
+  background-color: #0056b3;
+}
+
+@keyframes pulse-border-inset {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(30, 150, 220, 0.4);
+  }
+  70% {
+    box-shadow: inset 0 0 0 10px rgba(30, 150, 220, 0);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 rgba(30, 150, 220, 0.4);
+  }
+}
+
+.pulse-border {
+  animation: pulse-border-inset 2s ease-out infinite;
+  border: 1px transparent #1e96dc !important; /* Changed 'transparent' to 'solid' */
+  box-shadow: inset 0 0 0 0 rgba(30, 150, 220, 0.4);
+  position: relative;
+  z-index: 1;
+}
+
+.report-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  position: relative;
+  padding: 5px;
 }

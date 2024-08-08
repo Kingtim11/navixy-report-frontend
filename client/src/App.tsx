@@ -1,5 +1,6 @@
 // App.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 import GeneratedReportsList from './components/GeneratedReportsList';
 import ReportTypeSelection from './components/ReportTypeSelection';
 import ReportGenerationForm from './components/ReportGenerationForm';
@@ -16,7 +17,33 @@ const App: React.FC = () => {
   const [currentReportId, setCurrentReportId] = useState<number | null>(null);
   const [currentReportTitle, setCurrentReportTitle] = useState<string>('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const customerId = 'customer_123'; // Replace with actual customer ID
+  const [sessionKey, setSessionKey] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
+  const [newReportTimestamp, setNewReportTimestamp] = useState<number | null>(null);
+
+  const resetToGeneratedReportsList = () => {
+    setStep(0);
+    setSelectedReportType(null);
+    setSelectedTrackers([]);
+    setPdfUrl(null);
+    setCurrentReportId(null);
+    setCurrentReportTitle('');
+  };
+
+  useEffect(() => {
+    const sessionKey = Cookies.get('hash');
+    const userId = localStorage.getItem('user_id');
+    if (sessionKey && userId) {
+      setSessionKey(sessionKey);
+      setUserId(userId);
+    } else {
+      // Handle the case where the session key or user id is not found
+      console.error('Session key or user ID is missing');
+    }
+  }, []);
+
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  console.log("User Time Zone:", userTimeZone);
 
   const handleCreateReport = () => setStep(1);
   const handleSelectReportType = (type: string) => {
@@ -48,7 +75,12 @@ const App: React.FC = () => {
   const handleDownload = async (format: 'pdf' | 'xlsx') => {
     if (currentReportId) {
       try {
-        const blob = await downloadReport(currentReportId, format);
+        const response = await downloadReport(currentReportId, format);
+        
+        const blob = new Blob([response], { 
+          type: format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        });
+        
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -72,14 +104,22 @@ const App: React.FC = () => {
     setAnchorEl(null);
   };
 
+  // Decide what to do with this, error message is probably better.
+  if (!sessionKey || !userId) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Box className="app-container">
       {step === 0 && (
         <>
           <GeneratedReportsList
             onCreateReport={handleCreateReport}
-            customerId={customerId}
+            sessionKey={sessionKey}
+            userId={userId}
             onOpenReport={handleOpenReport}
+            newReportTimestamp={newReportTimestamp}
+            setNewReportTimestamp={setNewReportTimestamp}
           />
           {pdfUrl && (
             <div className="report-viewer-container">
@@ -117,9 +157,15 @@ const App: React.FC = () => {
           <ReportGenerationForm
             onBack={handleBack}
             reportType={selectedReportType}
-            customerId={customerId}
+            sessionKey={sessionKey}
+            userId={userId}
             selectedTrackers={selectedTrackers}
             setSelectedTrackers={setSelectedTrackers}
+            userTimeZone={userTimeZone}
+            onReportGenerated={() => {
+              setNewReportTimestamp(Date.now());
+              resetToGeneratedReportsList();
+            }}
           />
         </>
       )}

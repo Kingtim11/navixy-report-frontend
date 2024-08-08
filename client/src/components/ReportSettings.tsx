@@ -1,5 +1,6 @@
-// src/components/ReportSettings.tsx
+// ReportSettings.tsx
 import React, { useState, useEffect, useMemo } from 'react';
+import { ReactDatePickerCustomHeaderProps } from 'react-datepicker';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -11,14 +12,64 @@ interface ReportSettingsProps {
   endDate: string;
   startTime: string;
   endTime: string;
+  daysWithoutSignal: number; // Add daysWithoutSignal prop
   setStartDate: (date: string) => void;
   setEndDate: (date: string) => void;
   setStartTime: (time: string) => void;
   setEndTime: (time: string) => void;
+  setDaysWithoutSignal: (days: number) => void; // Add setDaysWithoutSignal prop
   handleGenerateReport: () => void;
-  handleCancel: () => void; // Add this prop
+  handleCancel: () => void;
   fileURL: string | null;
 }
+
+const CustomHeader = ({
+  date,
+  changeYear,
+  changeMonth,
+  decreaseMonth,
+  increaseMonth,
+  prevMonthButtonDisabled,
+  nextMonthButtonDisabled,
+}: ReactDatePickerCustomHeaderProps): JSX.Element => {
+  return (
+    <div className="custom-header">
+      <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled}>
+        {"<"}
+      </button>
+      <select
+        value={date.getFullYear()}
+        onChange={({ target: { value } }) => changeYear(parseInt(value))}
+      >
+        {Array.from({ length: 10 }, (_, i) => date.getFullYear() - 5 + i).map(
+          (year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          )
+        )}
+      </select>
+
+      <select
+        value={date.getMonth()}
+        onChange={({ target: { value } }) => changeMonth(parseInt(value))}
+      >
+        {[
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December",
+        ].map((month, index) => (
+          <option key={month} value={index}>
+            {month}
+          </option>
+        ))}
+      </select>
+
+      <button onClick={increaseMonth} disabled={nextMonthButtonDisabled}>
+        {">"}
+      </button>
+    </div>
+  );
+};
 
 const ReportSettings: React.FC<ReportSettingsProps> = ({
   reportType,
@@ -28,20 +79,25 @@ const ReportSettings: React.FC<ReportSettingsProps> = ({
   endDate,
   startTime,
   endTime,
+  daysWithoutSignal, // Add daysWithoutSignal prop
   setStartDate,
   setEndDate,
   setStartTime,
   setEndTime,
+  setDaysWithoutSignal, // Add setDaysWithoutSignal prop
   handleGenerateReport,
-  handleCancel, // Destructure this prop
+  handleCancel,
   fileURL,
 }) => {
   const initialStartDate = useMemo(() => (startDate ? new Date(startDate) : new Date()), [startDate]);
   const initialEndDate = useMemo(() => (endDate ? new Date(endDate) : new Date()), [endDate]);
+  const today = new Date();
+  const placeholderText = `${reportType} report` || 'Enter report title';
 
   const [dateRange, setDateRange] = useState<[Date | undefined, Date | undefined]>([initialStartDate, initialEndDate]);
   const [startTimeMinutes, setStartTimeMinutes] = useState(0);
-  const [endTimeMinutes, setEndTimeMinutes] = useState(1439); // 23:59 in minutes
+  const [endTimeMinutes, setEndTimeMinutes] = useState(1439);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   useEffect(() => {
     setStartDate(initialStartDate.toISOString().split('T')[0]);
@@ -63,12 +119,19 @@ const ReportSettings: React.FC<ReportSettingsProps> = ({
 
   const handleTimeRangeChange = (e: React.ChangeEvent<HTMLInputElement>, isStart: boolean) => {
     const value = parseInt(e.target.value);
+    // Round to nearest 15-minute increment
+    let roundedValue = Math.round(value / 15) * 15;
+    // Stops the slider going past 23:59
+    if (roundedValue > 1439) {
+      roundedValue = 1439
+    }
+
     if (isStart) {
-      setStartTimeMinutes(value);
-      setStartTime(formatMinutesToTime(value));
+      setStartTimeMinutes(roundedValue);
+      setStartTime(formatMinutesToTime(roundedValue));
     } else {
-      setEndTimeMinutes(value);
-      setEndTime(formatMinutesToTime(value));
+      setEndTimeMinutes(roundedValue);
+      setEndTime(formatMinutesToTime(roundedValue));
     }
   };
 
@@ -77,7 +140,7 @@ const ReportSettings: React.FC<ReportSettingsProps> = ({
       <div className="panel-header">
         <span>{reportType}</span>
       </div>
-      <div className="report-generation-content">
+      <div className="report-generation-content-settings">
         <div className="input-group">
           <label htmlFor="report-title">Report Title:</label>
           <input
@@ -85,12 +148,14 @@ const ReportSettings: React.FC<ReportSettingsProps> = ({
             type="text"
             value={reportTitle}
             onChange={(e) => setReportTitle(e.target.value)}
-            placeholder="Enter report title"
+            placeholder={placeholderText}
+            required
           />
         </div>
         <div className="input-group">
           <label>Date Range:</label>
           <DatePicker
+            calendarClassName='date-picker'
             selectsRange
             startDate={dateRange[0]}
             endDate={dateRange[1]}
@@ -98,13 +163,21 @@ const ReportSettings: React.FC<ReportSettingsProps> = ({
             dateFormat="dd/MM/yyyy"
             placeholderText="Select date range"
             shouldCloseOnSelect={false}
-            onCalendarClose={() => {
-              if (dateRange[0] && dateRange[1]) {
-                // Close calendar if both dates are selected
-                setDateRange(dateRange);
-              }
-            }}
-          />
+            open={isCalendarOpen}
+            onInputClick={() => setIsCalendarOpen(true)}
+            onClickOutside={() => setIsCalendarOpen(false)}
+            renderCustomHeader={CustomHeader}
+            maxDate={today}
+          >
+            <div className="datepicker-ok-button-container">
+              <button 
+                className="datepicker-ok-button"
+                onClick={() => setIsCalendarOpen(false)}
+              >
+                Ok
+              </button>
+            </div>
+          </DatePicker>
         </div>
         <div className="input-group">
           <label>Time Range: <span>{startTime} - {endTime}</span></label>
@@ -129,6 +202,20 @@ const ReportSettings: React.FC<ReportSettingsProps> = ({
             />
           </div>
         </div>
+        {reportType === 'staleGPS' && (
+          <div className="input-group">
+            <label htmlFor="days-without-signal">Days Without Signal:</label>
+            <input
+              id="days-without-signal"
+              type="number"
+              min="1"
+              max="30"
+              value={daysWithoutSignal}
+              onChange={(e) => setDaysWithoutSignal(parseInt(e.target.value))}
+              required
+            />
+          </div>
+        )}
         <div className="button-group">
           <button className="cancel-button" onClick={handleCancel}>Cancel</button>
           <button className="generate-button" onClick={handleGenerateReport}>Build Report</button>
